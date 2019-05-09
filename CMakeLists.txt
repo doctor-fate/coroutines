@@ -1,0 +1,40 @@
+cmake_minimum_required(VERSION 3.1.0)
+
+if(${CMAKE_VERSION} VERSION_LESS 3.11)
+  cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+else()
+  cmake_policy(VERSION 3.11)
+endif()
+
+project(coroutines)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CXX_STANDARD_REQUIRED ON)
+
+if (WIN32)
+  if (${CMAKE_SYSTEM_VERSION} EQUAL 10)
+    add_compile_definitions(_WIN32_WINNT=0x0A00)
+  elseif (${CMAKE_SYSTEM_VERSION} EQUAL 6.3)
+    add_compile_definitions(_WIN32_WINNT=0x0603)
+  elseif (${CMAKE_SYSTEM_VERSION} EQUAL 6.2)
+    add_compile_definitions(_WIN32_WINNT=0x0602)
+  elseif (${CMAKE_SYSTEM_VERSION} EQUAL 6.1)
+    add_compile_definitions(_WIN32_WINNT=0x0601)
+  elseif (${CMAKE_SYSTEM_VERSION} EQUAL 6.0)
+    add_compile_definitions(_WIN32_WINNT=0x0600)
+  else ()
+    add_compile_definitions(_WIN32_WINNT=0x0501)
+  endif ()
+endif ()
+
+find_package(Boost 1.67 REQUIRED)
+
+add_executable(generator generator.cpp)
+
+target_compile_options(generator PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/await>)
+
+add_executable(asio asio.cpp)
+
+target_compile_options(asio PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/await>)
+
+target_link_libraries(asio PRIVATE Boost::boost)
